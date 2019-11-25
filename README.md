@@ -18,12 +18,21 @@ sdk-core/src/test/java/io/civis/ssm/sdk/client/SsmClientItTest.java
 
 ## Gradle
 
- * Build
+ * Start local blockchain
+```
+docker-compose -f docker-compose-it.yaml up -d
+```
+
+ * Test
  ```bash
-./gradlew build
+make test 
+```
+
+ * Test
+ ```bash
+make package 
 ```
 
  * Publish
  ```bash
-./gradlew publish -P version=0.1.0-SNAPSHOT
-```
+make push

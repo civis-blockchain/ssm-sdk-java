@@ -1,0 +1,36 @@
+image: civisblockchain/builder-ci:0.1.0-local-0
+
+stages:
+  - build
+  - verify
+  - version
+  - package
+
+test:
+  stage: verify
+  before_script:
+    - CONTAINER_NAME=$(docker ps --format '{{.Names}}' --filter name=$HOSTNAME*)
+    - docker-compose -f docker-compose-it.yaml up -d
+    - docker network connect bclannet-it $CONTAINER_NAME
+  after_script:
+    - CONTAINER_NAME=$(docker ps --format '{{.Names}}' --filter name=$HOSTNAME*)
+    - docker network disconnect bclannet-it $CONTAINER_NAME
+    - docker-compose -f docker-compose-it.yaml down
+  script:
+    - make test
+
+version:
+  stage: version
+  image: civisblockchain/semantic-versioning:latest
+  script:
+    - make -f /opt/io.smart-b/semantic-versioning/Makefile debug_version
+    - make -f /opt/io.smart-b/semantic-versioning/Makefile next_version >> version.build
+  artifacts:
+    paths:
+      - version*
+
+package:
+  stage: package
+  script:
+    - export VERSION_BUILD=$(cat version.build)
+    - make package -e VERSION=${VERSION_BUILD}
